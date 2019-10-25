@@ -1,52 +1,61 @@
-# Git to SVN for  WordPress Plugins or (git2svn4wp-plugins)
-## What this for (shortly)?
-1. Take your WordPress plugin Git (maybe even GitHub) repository
-2. And commit changes to WordPress Plugins Directory SVN repository.
+# Git to SVN for  WordPress Plugins or (wp-plugins-deploy)
+
+![GitHub All Releases](https://img.shields.io/github/downloads/butuzov/wp-plugins-deploy/total)
+
+## What this for?
+1. Develop your plugin using Git
+2. Deploy new release to WordPress Plugins Directory (SVN)
 
 ## Example
-```bash
-# Script Screates and Drop direcotries a lot... so it need to have
-# some executions permissions
-chmod +x git2svn4wp.sh
 
+```bash
 # Execution Example Kwywords Description.
 #
 # -svn=URL Where URL is WP SVN for your Plugin
 # -git=URL Where URL is Git Repository URL
 # -user=USERNAME Where USERNAME is WP SVN Username (case sensitive)
 # -pass=******** WHERE ******** is WP SVN User password.
-./git2svn4wp.sh -git=https://github.com/username/plugin-repo \
-                -svn=http://plugins.svn.wordpress.org/plugin \
-                -user=wp-svn-username \
-                -pass=wp-svn-usernames-passoword
+./wp-deploy.sh --git=https://github.com/username/plugin-repo \
+               --svn=http://plugins.svn.wordpress.org/plugin \
+               --user="${WP_SVN_USER}" --pass="${WP_SVN_PASSWORD}"
+
+# redeploy current git tag
+./wp-deploy.sh --git=https://github.com/username/plugin-repo \
+               --svn=http://plugins.svn.wordpress.org/plugin \
+               --user="${WP_SVN_USER}" -pass="${WP_SVN_PASSWORD}" \
+			   --force
 ```
+
+## Options
+
+* `-git` or `--git`: URL of GIT repository
+* `-svn` or `--svn`: URL of SVN repository
+* `-u`, `--u`, `-user`, `--user`, `-username` or `--username`: SVN username.
+* `-p`, `--p`, `-pass`, `--pass`, `-password` or `--password`: SVN username.
+* `-f`, `--force`: Force GIT tag redeployment.
 
 ## A bit longer version of _"What this shell script does"_ ?
 
 1. Ensure that published version is newer then one in svn. ( It wouldn't allow you to publish code to repository that has `trunk` as `Stable Tag` in your `readme.txt` of if your `readme.txt` doesn't have `Stable Tag` at all.
 
-2. Convert your `ReAdMe.markdown` (or `readme.md`) and rest of `*.md` ( or `*.markdown` files) that found in your GitRepo root to `readme.txt` (so your repo *would not contain extra file you need to edit before release*) __[*](#readmetxt)__
+2. Convert your `readme.md` (or `readme.md`) and rest of `*.md` ( or `*.markdown` files) that found in your GitRepo root to `readme.txt` (so your repo *would not contains extra file you need to edit before release*) __[*](#readmetxt)__
 
 3. Update [Plugin Assets](https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/) to correct locations. Shell script will search for your assets in root (`/`), `assets` and `wp-svn-assets` and then copy them all to `/assets` directory of your svn repo. __[*](#assets)__
 
 	__NOTE__: I haven't found a way to make this files or folder as non-exportable and still use it while deploying (deploy script uses a export/archive version of repository).
 
 ## Why? Inspiration.
-This work is done mostly to automate CI/CD routine and practice some shell scripting skills. Deployer hardly inspired by  [svn2git-tools](https://github.com/ocean90/svn2git-tools/) by legendary @ocean90.
+
+This script is done to automate boring CD tasks. Inspired by  [svn2git-tools](https://github.com/ocean90/svn2git-tools/) by @ocean90.
 
 ## Features & Todo's
 
-* [x] Plugin Header readme.md -> readme.txt conversion
-  * [ ] Need to provide a way to preserve readme.txt in case its required by plugin authors.
-* [x] Assets management
-  * [ ] Need to find a way to block export of useless assets and still use it for deployment.
-* [x] Clean-up Procedure
-* [ ] Shell analogue of php's `version_compare`
-* [ ] Integration examples (like Travis, Circle-CI etc...).
-* [ ] Integration with deployed plugins (so code from deployed repository can interact with deploy proccess like `do_action` always did.)
+* [x] Generation of `readme.txt`: Allow you to use github style markdown, in order to generate readme.txt
+* [x] Separate Usage of assets (no need to deploy assets to final users if only wordpress plugins directory require it)
+* [x] Forse update of current release.
 
 
-### Errors you can run into.
+### Troubleshooting.
 
 ```bash
 # Something wrong with your `SVN_USER` its not exists in SVN or misspelled.
@@ -60,8 +69,10 @@ svn: E000000: Commit failed (details follow):
 svn: E000000: No more credentials or we tried too many times.
 ```
 
+### Example Git repository.
 
+This script used for deployments of [Debug Bar Rewrite Rules](https://github.com/butuzov/Debug-Bar-Rewrite-Rules) plugin.
 
-###### Footnotes
+### Footnotes
 * <a name="readmetxt"></a> `readme.txt` used only in [WordPress Plugin Directory](https://wordpress.org/plugins/), and keeping them in git repo (on my opinion) is pointless task.
 * <a name="assets"></a> [Plugin Assets](https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/) also only used by WordPress Plugin Directory
